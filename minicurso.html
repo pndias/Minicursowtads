@@ -1,0 +1,719 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<title>Minicurso — Agentes CLI</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #0A0E1A; color: #e2e8f0;
+    font-family: -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+  body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 32px 28px; }
+  .capa { text-align: center; padding: 60px 0 30px; }
+  .capa h1 { font-size: 34px; margin: 0 0 8px; color: #00FF94; letter-spacing: .5px; }
+  .capa .sub { color: #94a3b8; font-size: 15px; }
+  .capa .badge { display:inline-block; margin-top:18px; padding:6px 16px;
+    border:1px solid #1e3050; border-radius:20px; color:#38bdf8; font-size:13px; }
+  h2 { font-size: 22px; margin: 0; color: var(--cor, #00FF94); }
+  h3 { font-size: 14.5px; margin: 0 0 8px; color: #38bdf8; }
+  p { font-size: 13.5px; line-height: 1.65; margin: 0; color: #e2e8f0; }
+  .agenda { background: #111827; border: 1px solid #1e3050; border-radius: 12px;
+    padding: 18px 20px; margin: 24px 0; }
+  .agenda h3 { color: #00FF94; font-size: 16px; }
+  .tl-item { border-left: 4px solid #1e3050; padding: 6px 12px; margin: 6px 0;
+    background: #1a2235; border-radius: 4px; display:flex; gap:12px; align-items:center; }
+  .tl-tempo { color: #94a3b8; font-size: 12px; font-family: monospace; min-width: 110px; }
+  .tl-bloco { color: #e2e8f0; font-size: 13.5px; font-weight: 600; }
+  .secao { page-break-before: always; padding-top: 10px; }
+  .secao-head { border-bottom: 2px solid var(--cor); padding-bottom: 8px;
+    margin-bottom: 16px; display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; }
+  .subtitulo { color: #94a3b8; font-size: 12.5px; font-family: monospace; }
+  .card, .codewrap, .aviso, .quiz, .exerc { margin: 12px 0; page-break-inside: avoid; }
+  .card { background: #111827; border: 1px solid #1e3050; border-radius: 10px;
+    padding: 14px 16px; }
+  ul { margin: 6px 0 0; padding-left: 20px; }
+  li { font-size: 13px; line-height: 1.6; margin: 4px 0; color: #e2e8f0; }
+  ul.defs { list-style: none; padding-left: 0; }
+  ul.defs li { border-bottom: 1px solid #1e3050; padding: 6px 0; }
+  .term { color: #00FF94; font-weight: 700; }
+  .url { color: #38bdf8; font-family: monospace; font-size: 11.5px; }
+  .pitch { background: linear-gradient(135deg, #1a1030, #0a1420);
+    border: 1px solid #7c3aed55; border-left: 4px solid #7c3aed;
+    border-radius: 10px; padding: 18px 20px; font-size: 15px; font-style: italic;
+    line-height: 1.7; color: #e9d5ff; margin: 12px 0; }
+  pre.code { background: #060d1a; border: 1px solid #1e3050; border-radius: 8px;
+    padding: 12px 14px; overflow-x: auto; font-size: 11.5px; line-height: 1.6;
+    color: #c9d1e8; margin: 8px 0 0; font-family: 'Courier New', monospace;
+    white-space: pre-wrap; word-break: break-word; }
+  table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 12.5px; }
+  th, td { border: 1px solid #1e3050; padding: 7px 10px; text-align: left;
+    vertical-align: top; color: #e2e8f0; }
+  th { background: #1a2235; color: #00FF94; font-size: 12px; }
+  .aviso { border-radius: 10px; padding: 12px 16px; border-left: 4px solid; }
+  .aviso-tit { font-weight: 700; margin-bottom: 4px; font-size: 13.5px; }
+  .aviso div:last-child { font-size: 13px; line-height: 1.6; }
+  .aviso-info { background: #0a1a2a; border-color: #38bdf8; color: #bae6fd; }
+  .aviso-warn { background: #2a1a08; border-color: #f59e0b; color: #fde68a; }
+  .aviso-tip  { background: #0a2018; border-color: #00FF94; color: #a7f3d0; }
+  .quiz { background: #1a2235; border: 1px solid #1e3050; border-radius: 10px;
+    padding: 14px 16px; }
+  .quiz-tit { color: #38bdf8; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+  .quiz-perg { font-weight: 600; font-size: 14px; margin-bottom: 10px; }
+  .quiz-ops { list-style: none; padding-left: 0; margin: 0; }
+  .quiz-ops li { background: #111827; border: 1px solid #1e3050; border-radius: 7px;
+    padding: 8px 12px; margin: 6px 0; font-size: 13px; }
+  .quiz-ops li.certa { background: #0a2010; border-color: #00FF94; color: #6ee7b7;
+    font-weight: 600; }
+  .quiz-exp { margin-top: 10px; background: #0a1628; border: 1px solid #38bdf844;
+    border-radius: 7px; padding: 9px 12px; color: #bae6fd; font-size: 12.5px; }
+  .exerc { background: linear-gradient(135deg, #14110a, #0a1410);
+    border: 1px solid #00FF9444; border-left: 4px solid #00FF94;
+    border-radius: 10px; padding: 14px 16px; }
+  .exerc-head { display:flex; align-items:center; gap:8px; margin-bottom:8px; flex-wrap:wrap; }
+  .nivel { background: #00FF94; color: #000; font-size: 10px; font-weight: 800;
+    padding: 2px 8px; border-radius: 12px; letter-spacing: .5px; }
+  .exerc-tit { color: #00FF94; font-size: 14px; font-weight: 700; }
+  .exerc-enun { font-size: 13px; line-height: 1.65; }
+  .dicas { margin-top: 8px; }
+  .dica { background: #111827; border: 1px solid #1e3050; border-radius: 6px;
+    padding: 6px 11px; color: #94a3b8; font-size: 12px; margin: 5px 0; }
+  .nota { margin-top: 8px; font-size: 12px; color: #94a3b8; line-height: 1.6;
+    font-style: italic; }
+  .skillbox h3 { color: #a7f3d0; }
+  .prdbox h3 { color: #f59e0b; }
+</style></head><body><div class="wrap">
+  <div class="capa">
+    <h1>Agentes CLI na Prática</h1>
+    <div class="sub">Do conceito à orquestração de múltiplos agentes em produção</div>
+    <div class="sub" style="margin-top:6px">Minicurso — TADS / IFRN</div>
+    <div class="badge">Material completo · 6 módulos · exercícios & quizzes</div>
+  </div>
+  <div class="agenda">
+    <h3>🗓️ Agenda</h3>
+    <div class="tl-item" style="border-left-color:#7c3aed">
+        <span class="tl-tempo">0:00–0:10</span>
+        <span class="tl-bloco">Abertura &amp; Contexto</span></div><div class="tl-item" style="border-left-color:#0ea5e9">
+        <span class="tl-tempo">0:10–0:30</span>
+        <span class="tl-bloco">O que são Agentes CLI</span></div><div class="tl-item" style="border-left-color:#10b981">
+        <span class="tl-tempo">0:30–0:55</span>
+        <span class="tl-bloco">Harnesses, Skills &amp; Extensões</span></div><div class="tl-item" style="border-left-color:#f59e0b">
+        <span class="tl-tempo">0:55–1:10</span>
+        <span class="tl-bloco">Economia de Contexto &amp; PRDs</span></div><div class="tl-item" style="border-left-color:#00FF94">
+        <span class="tl-tempo">1:10–1:30</span>
+        <span class="tl-bloco">Prática: Multi-agentes em Python</span></div><div class="tl-item" style="border-left-color:#ec4899">
+        <span class="tl-tempo">Bônus</span>
+        <span class="tl-bloco">Deploy, CI/CD &amp; Agentes em Produção</span></div>
+  </div>
+  <section class="secao" style="--cor:#7c3aed">
+      <div class="secao-head">
+        <h2>① Abertura &amp; Contexto</h2>
+        <span class="subtitulo">0:00 – 0:10 min</span>
+      </div>
+      <div class="pitch">"Você já passou horas procurando um bug, lendo docs, abrindo 30 abas no browser?<br>Imagine um assistente que lê o projeto, entende o erro, pesquisa a solução e abre o PR — enquanto você toma um café."</div>
+<div class="card">
+        <h3>Por que isso importa AGORA (2025)?</h3>
+        <p>Em 2023 LLMs só conversavam. Em 2024 ganharam "tool use". Em 2025 viraram agentes<br>autônomos que rodam no seu terminal, leem seu código, executam comandos e abrem Pull Requests.<br>A diferença entre um dev que sabe orquestrar agentes e um que não sabe está virando o<br>novo "saber usar Google" — uma habilidade que multiplica produtividade em 3-10x.<br>Este minicurso te dá o mapa: do conceito à orquestração de múltiplos agentes em produção.</p></div>
+<div class="card">
+        <h3>O que o aluno vai sair sabendo fazer:</h3>
+        <ul><li>Usar agentes CLI (Claude Code, Gemini CLI) para resolver problemas reais</li><li>Entender o loop ReAct e a anatomia de uma chamada de ferramenta (tool call)</li><li>Configurar harnesses de browser, ferramentas (MCP) e skills customizadas</li><li>Economizar tokens e compactar contexto em projetos longos</li><li>Escrever PRDs que um agente transforma em código funcional</li><li>Orquestrar múltiplos agentes em Python com CrewAI / LangGraph / AutoGen</li></ul></div>
+<div class="card">
+        <h3>O ecossistema em 1 minuto:</h3>
+        <ul class="defs"><li><span class="term">Gemini CLI</span> — CLI do Google, gratuito, bom ponto de entrada</li><li><span class="term">Claude Code</span> — Agente de engenharia da Anthropic (você está usando agora)</li><li><span class="term">Cursor / Windsurf</span> — IDEs com agentes embutidos no editor</li><li><span class="term">Harness</span> — Adaptadores que dão ao agente browser, terminal, arquivos</li><li><span class="term">MCP (Model Context Protocol)</span> — Padrão aberto para conectar agentes a ferramentas</li><li><span class="term">Skills / SKILL.md</span> — Instruções especializadas carregadas sob demanda</li></ul></div>
+<div class="aviso aviso-info">
+        <div class="aviso-tit">Pré-requisitos para acompanhar</div>
+        <div>Python 3.10+, Node 18+, uma conta com API key (Anthropic, Google ou OpenAI) e<br>um terminal. Não precisa ser expert — se você já fez um CRUD, está pronto.<br>Tudo que mostrarmos roda em máquina comum de estudante.</div></div>
+<div class="card">
+        <h3>Mini-glossário (volte aqui quando travar):</h3>
+        <ul class="defs"><li><span class="term">LLM</span> — Large Language Model — o 'cérebro' (ex: Claude, Gemini, GPT)</li><li><span class="term">Agente</span> — LLM + ferramentas + loop de decisão autônomo</li><li><span class="term">Tool / Ferramenta</span> — Função que o agente pode chamar (ler arquivo, rodar bash...)</li><li><span class="term">Contexto</span> — Tudo que o modelo 'enxerga' numa requisição (texto + código)</li><li><span class="term">Token</span> — Pedaço de texto (~4 caracteres). É a unidade de custo</li><li><span class="term">Harness</span> — A 'casca' que conecta o LLM ao mundo real (terminal, browser)</li><li><span class="term">MCP</span> — Protocolo para plugar ferramentas externas no agente</li><li><span class="term">PRD</span> — Product Requirements Document — o briefing do que construir</li></ul></div>
+<div class="exerc">
+        <div class="exerc-head"><span class="nivel">Aquecimento</span> <span class="exerc-tit">✎ Exercício 0 — Instale e fale com um agente</span></div>
+        <div class="exerc-enun">Instale o Gemini CLI (gratuito) OU o Claude Code e peça a ele a primeira tarefa:<br>"Liste os arquivos desta pasta e me diga em uma frase o que este projeto faz."<br>Observe que ele NÃO só responde — ele executa comandos para descobrir a resposta.</div>
+        <div class="dicas"><div class="dica">💡 Gemini CLI: npm install -g @google/gemini-cli &amp;&amp; gemini</div><div class="dica">💡 Claude Code: npm install -g @anthropic-ai/claude-code &amp;&amp; claude</div><div class="dica">💡 Repare quantas vezes o agente 'pensa → age → observa' antes de responder</div></div></div>
+    </section>
+<section class="secao" style="--cor:#0ea5e9">
+      <div class="secao-head">
+        <h2>② O que são Agentes CLI</h2>
+        <span class="subtitulo">0:10 – 0:30 min</span>
+      </div>
+      <div class="codewrap">
+        <h3>Loop de raciocínio do agente (ReAct = Reason + Act):</h3>
+        <pre class="code">┌─────────────────────────────────────────┐
+│          LOOP DO AGENTE (ReAct)          │
+├─────────────────────────────────────────┤
+│  1. OBSERVE  → Recebe tarefa/contexto   │
+│       ↓                                 │
+│  2. THINK    → Raciocina (scratchpad)   │
+│       ↓                                 │
+│  3. ACT      → Chama ferramenta         │
+│       ↓                                 │
+│  4. OBSERVE  → Recebe resultado         │
+│       ↓                                 │
+│  5. REPEAT ou DONE                      │
+└─────────────────────────────────────────┘</pre></div>
+<div class="card">
+        <h3>Anatomia de um agente (as 4 peças)</h3>
+        <p>1. MODELO (LLM): o cérebro que raciocina e decide.<br>2. FERRAMENTAS (tools): mãos e olhos — ler/escrever arquivos, rodar bash, pesquisar web.<br>3. LOOP / ORQUESTRADOR: o código que chama o modelo, executa as ferramentas e devolve<br>   os resultados — repetindo até a tarefa terminar.<br>4. CONTEXTO / MEMÓRIA: o histórico da conversa + arquivos relevantes que o modelo enxerga.<br><br>Tire qualquer peça e deixa de ser agente: sem ferramentas é só um chatbot;<br>sem loop é uma única resposta; sem contexto ele esquece tudo.</p></div>
+<div class="codewrap">
+        <h3>Chatbot comum vs Agente CLI:</h3>
+        <table><thead><tr><th>Chatbot comum</th><th>Agente CLI</th></tr></thead>
+        <tbody><tr><td>Só responde com texto</td><td>Executa ações reais</td></tr><tr><td>Sem memória de arquivos</td><td>Lê e edita seu projeto</td></tr><tr><td>Não acessa internet</td><td>Pode pesquisar, abrir URLs</td></tr><tr><td>Uma resposta por vez</td><td>Loop até concluir a tarefa</td></tr><tr><td>Você implementa</td><td>Ele implementa por você</td></tr><tr><td>Você verifica tudo</td><td>Ele roda os testes e se corrige</td></tr></tbody></table></div>
+<div class="codewrap">
+        <h3>Como o modelo 'pede' uma ferramenta — o tool call por dentro:</h3>
+        <pre class="code"># O modelo NÃO roda código. Ele devolve um JSON pedindo uma ação.
+# O HARNESS executa e devolve o resultado. Exemplo de um turno:
+
+# 1) O modelo responde com um pedido de ferramenta:
+{
+  "type": "tool_use",
+  "name": "bash",
+  "input": { "command": "pytest -q" }
+}
+
+# 2) O harness roda 'pytest -q' e devolve o resultado ao modelo:
+{
+  "type": "tool_result",
+  "content": "3 failed, 12 passed in 1.2s"
+}
+
+# 3) O modelo lê o erro, decide corrigir, e pede outra ferramenta:
+{
+  "type": "tool_use",
+  "name": "edit_file",
+  "input": { "path": "src/auth.py", "old": "&lt;=", "new": "&lt;" }
+}
+# ...e o loop continua até "0 failed".</pre></div>
+<div class="codewrap">
+        <h3>Exemplo real — pedindo ao agente para criar uma API:</h3>
+        <pre class="code"># No terminal, com Claude Code:
+$ claude "Crie uma API REST em FastAPI com CRUD de usuários,
+  usando SQLite, com auth JWT e testes com pytest.
+  Siga o padrão do projeto em ./src"
+
+# O agente vai:
+# 1. Ler os arquivos em ./src para entender o padrão
+# 2. Criar models, routers, schemas
+# 3. Escrever os testes
+# 4. Rodar pytest e corrigir erros automaticamente
+# 5. Retornar com tudo funcionando</pre></div>
+<div class="card">
+        <h3>Ferramentas que um agente CLI tipicamente tem:</h3>
+        <ul><li>bash / shell — executa comandos no terminal</li><li>read_file / write_file / edit_file — lê e edita arquivos</li><li>glob / grep — encontra arquivos e padrões no código</li><li>web_search / web_fetch — pesquisa e lê páginas da internet</li><li>browser — navega, clica, preenche formulários, tira screenshots</li><li>code_execution — roda Python, Node, etc. num sandbox</li><li>memory — persiste informações entre sessões</li><li>subagent / task — delega sub-tarefas a outros agentes</li></ul></div>
+<div class="codewrap">
+        <h3>Níveis de autonomia (e quando usar cada um):</h3>
+        <table><thead><tr><th>Nível</th><th>Comportamento</th><th>Quando usar</th></tr></thead>
+        <tbody><tr><td>Sugestão</td><td>Mostra o diff, você aplica</td><td>Código crítico, produção</td></tr><tr><td>Aprovação</td><td>Pede OK antes de cada ação</td><td>Aprendendo a confiar</td></tr><tr><td>Auto (edição)</td><td>Edita arquivos sozinho, não roda comandos perigosos</td><td>Dia a dia</td></tr><tr><td>Auto total (YOLO)</td><td>Roda tudo sem perguntar</td><td>Sandbox / experimentos descartáveis</td></tr></tbody></table></div>
+<div class="aviso aviso-warn">
+        <div class="aviso-tit">Cuidado: o agente é um estagiário brilhante, não um sênior</div>
+        <div>Ele pode 'alucinar' uma biblioteca que não existe, deletar arquivos errados ou<br>commitar segredos. Regras de ouro: trabalhe em git (dá pra reverter), revise diffs,<br>nunca dê acesso de produção sem necessidade e desconfie de confiança excessiva.</div></div>
+<div class="quiz">
+        <div class="quiz-tit">🧠 Quiz relâmpago</div>
+        <div class="quiz-perg">O que diferencia um agente CLI de um chatbot comum?</div>
+        <ul class="quiz-ops"><li class="">○ O agente usa um modelo maior</li><li class="certa">✓ O agente executa ações em loop usando ferramentas até concluir a tarefa</li><li class="">○ O agente é sempre mais barato</li><li class="">○ O agente não precisa de internet</li></ul>
+        <div class="quiz-exp">💡 A essência é o LOOP + FERRAMENTAS: observar, raciocinar, agir e repetir até terminar — não só responder texto.</div></div>
+<div class="exerc">
+        <div class="exerc-head"><span class="nivel">Básico</span> <span class="exerc-tit">✎ Exercício 1 — Faça o agente trabalhar em loop</span></div>
+        <div class="exerc-enun">Peça a um agente CLI: "Crie um script Python que conte palavras de um arquivo .txt,<br>escreva um teste com pytest, rode o teste e corrija até passar." Observe e anote:<br>quantas iterações do loop ReAct ele fez? Em qual passo ele se corrigiu sozinho?</div>
+        <div class="dicas"><div class="dica">💡 Use --verbose (ou modo equivalente) para ver o raciocínio</div><div class="dica">💡 Crie um arquivo .txt de exemplo antes para ele ter o que testar</div><div class="dica">💡 Se ele acertar de primeira, peça um requisito a mais para forçar uma correção</div></div></div>
+    </section>
+<section class="secao" style="--cor:#10b981">
+      <div class="secao-head">
+        <h2>③ Harnesses, Skills &amp; Extensões</h2>
+        <span class="subtitulo">0:30 – 0:55 min</span>
+      </div>
+      <div class="card">
+        <h3>O que é um Harness?</h3>
+        <p>Um harness é o "colete de ferramentas" do agente. Ele define quais capacidades<br>o agente tem acesso naquela sessão e MEDIA tudo que ele faz: executa as ferramentas,<br>aplica permissões, faz o sandboxing e devolve os resultados ao modelo.<br>O Browser Harness, por exemplo, dá ao agente um Chromium real que ele controla via<br>código — ele vê a página, clica em elementos, extrai dados, preenche formulários.</p></div>
+<div class="codewrap">
+        <h3>Browser Harness em ação — scraping com agente:</h3>
+        <pre class="code"># O agente recebe as ferramentas "navigate", "snapshot" e "click"
+# e raciocina sobre o que vê na tela
+
+Tarefa: "Acesse o portal do IFRN, encontre o calendário acadêmico
+         de 2025 e extraia todas as datas de provas."
+
+# Agente pensa:
+# → navigate("https://ifrn.edu.br")
+# → snapshot()  (lê a árvore de acessibilidade da página)
+# → encontra o link "Calendário Acadêmico", click(ref)
+# → baixa/lê o PDF
+# → extrai as datas e retorna em JSON estruturado</pre></div>
+<div class="card">
+        <h3>MCP — o 'USB-C' dos agentes</h3>
+        <p>MCP (Model Context Protocol) é um padrão aberto criado pela Anthropic e adotado<br>amplamente. Em vez de cada agente ter integrações próprias, você roda um "MCP server"<br>(GitHub, Postgres, Slack, Figma...) e QUALQUER agente compatível pode plugar nele.<br>É a diferença entre cada aparelho ter um carregador exclusivo e todos usarem USB-C.</p></div>
+<div class="codewrap">
+        <h3>Configurando um MCP server (ex: GitHub + Postgres):</h3>
+        <pre class="code">// .mcp.json  (ou config do Claude Code / Cursor)
+{
+  "mcpServers": {
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": { "GITHUB_TOKEN": "ghp_xxx" }
+    },
+    "postgres": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-postgres",
+               "postgresql://localhost/ifrn_tads"]
+    }
+  }
+}
+
+// Agora o agente pode: "Liste as PRs abertas e cruze com a tabela
+// 'alunos' no banco para ver quem ainda não entregou o trabalho."</pre></div>
+<div class="codewrap">
+        <h3>Escrevendo uma ferramenta customizada (Python / Anthropic SDK):</h3>
+        <pre class="code"># Toda ferramenta = um schema (o que o modelo vê) + uma função (o que roda)
+
+ferramenta = {
+    "name": "consultar_nota",
+    "description": "Consulta a nota de um aluno por matricula no SUAP.",
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "matricula": {"type": "string", "description": "Matricula IFRN"}
+        },
+        "required": ["matricula"]
+    }
+}
+
+def consultar_nota(matricula: str) -&gt; str:
+    # aqui voce chama a API real do SUAP / banco
+    return f"Aluno {matricula}: media 8.5, frequencia 92%"
+
+# O harness liga o schema a funcao: quando o modelo pede 'consultar_nota',
+# o seu codigo roda e o resultado volta pro modelo.</pre></div>
+<div class="codewrap skillbox">
+        <h3>🧩 O que é uma SKILL.md?</h3>
+        <pre class="code">---
+name: fastapi-padrao-ifrn
+description: Use quando criar APIs FastAPI no projeto IFRN.
+             Contém convenções, estrutura de pastas e padrões.
+---
+
+# Padrão FastAPI — IFRN TADS
+
+## Estrutura de pastas
+src/
+  routers/      # Um arquivo por recurso
+  models/       # SQLAlchemy models
+  schemas/      # Pydantic schemas
+  services/     # Lógica de negócio
+
+## Convenções
+- Sempre usar async/await
+- Nomear rotas em português: /usuarios, /disciplinas
+- Testes obrigatórios em tests/ com pytest</pre>
+        <div class="nota">A SKILL é injetada no contexto SÓ quando relevante (carregamento sob demanda). Economiza tokens e garante que o agente siga seus padrões sem você repetir a cada conversa.</div></div>
+<div class="card">
+        <h3>Técnicas para estender o agente (da mais simples à mais avançada):</h3>
+        <ul><li>CLAUDE.md / GEMINI.md — memória fixa do projeto, lida em toda sessão</li><li>SKILL.md files — padrões carregados sob demanda quando relevantes</li><li>Slash commands customizados — atalhos para prompts que você repete</li><li>MCP Servers — plugue GitHub, Jira, Slack, banco de dados via protocolo padrão</li><li>Custom tools — funções Python/JS que o agente pode chamar</li><li>Hooks — código que roda ANTES/DEPOIS de cada ação (lint, format, guard-rails)</li><li>Subagents — agentes especializados que o principal invoca para sub-tarefas</li></ul></div>
+<div class="codewrap">
+        <h3>CLAUDE.md — configuração e memória do projeto:</h3>
+        <pre class="code"># CLAUDE.md (na raiz do projeto)
+
+## Projeto
+Sistema de gestão acadêmica do IFRN — TADS 2025
+
+## Stack
+- Backend: FastAPI + SQLAlchemy + PostgreSQL
+- Frontend: React + Tailwind
+- Testes: pytest (backend), Vitest (frontend)
+
+## Regras
+- NUNCA commitar na branch main diretamente
+- Sempre rodar os testes antes de declarar a tarefa completa
+- Usar Português para nomes de variáveis de domínio
+- Documentar funções públicas com docstrings
+
+## Contexto
+Pasta /docs contém os requisitos funcionais.
+Pasta /infra contém os Dockerfiles.</pre></div>
+<div class="aviso aviso-tip">
+        <div class="aviso-tit">Hooks = guarda-corpos automáticos</div>
+        <div>Um hook pode rodar 'prettier' depois que o agente edita um arquivo, bloquear<br>'rm -rf', ou rejeitar um commit com segredos. É como ter um revisor automático que<br>nunca dorme. No Claude Code: configure em settings.json (PreToolUse / PostToolUse).</div></div>
+<div class="exerc">
+        <div class="exerc-head"><span class="nivel">Intermediário</span> <span class="exerc-tit">✎ Exercício 2 — Escreva sua primeira SKILL.md</span></div>
+        <div class="exerc-enun">Crie uma SKILL.md que ensine o agente o padrão de commits do seu time<br>(ex: Conventional Commits). Depois peça a ele para commitar uma mudança e veja se<br>ele seguiu o padrão SEM você precisar explicar de novo.</div>
+        <div class="dicas"><div class="dica">💡 Frontmatter precisa de 'name' e 'description' — a description é o gatilho</div><div class="dica">💡 Seja específico: dê exemplos de bons e maus commits dentro da skill</div><div class="dica">💡 Teste: peça um commit ANTES e DEPOIS de adicionar a skill, compare</div></div></div>
+<div class="exerc">
+        <div class="exerc-head"><span class="nivel">Intermediário</span> <span class="exerc-tit">✎ Exercício 3 — Plugue um MCP server</span></div>
+        <div class="exerc-enun">Configure o MCP server do GitHub (ou do filesystem) e peça ao agente:<br>"Resuma as 3 últimas issues abertas e proponha qual atacar primeiro."<br>Observe que ele agora acessa dados externos sem você colar nada manualmente.</div>
+        <div class="dicas"><div class="dica">💡 Comece pelo server-filesystem ou server-github (mais fáceis)</div><div class="dica">💡 Precisa de um token? Gere um Personal Access Token com escopo mínimo</div><div class="dica">💡 Se não tiver repo, use o server-everything (demo) do MCP para testar</div></div></div>
+    </section>
+<section class="secao" style="--cor:#f59e0b">
+      <div class="secao-head">
+        <h2>④ Economia de Contexto &amp; PRDs</h2>
+        <span class="subtitulo">0:55 – 1:10 min</span>
+      </div>
+      <div class="card">
+        <h3>Por que contexto importa?</h3>
+        <p>Agentes CLI têm uma "janela de contexto" — um limite de tokens que conseguem processar<br>de uma vez (ex: 200K tokens ≈ 500 páginas). Quanto mais código, histórico e docs você<br>empurra, mais CARO, mais LENTO e — surpresa — menos PRECISO o agente fica: ele se perde<br>no meio de muito texto ("lost in the middle"). Compactar = economizar dinheiro E melhorar<br>a qualidade das respostas.</p></div>
+<div class="codewrap">
+        <h3>A matemática do token (por que você deveria se importar):</h3>
+        <pre class="code"># Regra de bolso: 1 token ≈ 4 caracteres ≈ 0,75 palavra (em inglês).
+# Português gasta um pouco mais de tokens que inglês.
+
+# Exemplo de custo de UMA sessão longa mal gerenciada:
+#   - node_modules colado por engano ......... ~50.000 tokens
+#   - histórico de 2h de conversa ............ ~80.000 tokens
+#   - 10 arquivos relidos 5x cada ............ ~60.000 tokens
+#   TOTAL desperdiçado ....................... ~190.000 tokens
+
+# Cada requisição reenvia TODO o contexto. Numa conversa de 40 turnos,
+# 190K tokens podem ser reenviados dezenas de vezes = $$$ e lentidão.
+# Compactar para ~20K mantém o agente rápido, barato e focado.</pre></div>
+<div class="card">
+        <h3>Técnicas de economia de contexto:</h3>
+        <ul><li>/compact ou /summarize — pede ao agente para resumir o histórico e continuar</li><li>SKILL.md curtas e precisas — só o essencial, carregadas sob demanda</li><li>.gitignore / .agentignore — esconda node_modules, .venv, builds, datasets</li><li>Sessões por tarefa — comece uma conversa nova para cada feature</li><li>Checkpoints — peça ao agente para escrever um resumo em arquivo e recomeçar</li><li>Subagents — delegue buscas grandes; o subagente devolve só a conclusão</li><li>Docstrings como contexto — código bem documentado = menos explicação necessária</li><li>Aponte arquivos específicos (@arquivo.py) em vez de mandar ler a pasta toda</li></ul></div>
+<div class="codewrap">
+        <h3>Compactação manual de contexto (checkpoint em arquivo):</h3>
+        <pre class="code"># Quando a conversa está longa, peça:
+
+"Resuma o que fizemos até agora em um parágrafo técnico conciso,
+ incluindo: arquivos criados/modificados, decisões tomadas,
+ e próximos passos pendentes. Salve em .claude/sessao-2025-06-17.md"
+
+# Depois inicie nova sessão (contexto limpo) com:
+"Leia .claude/sessao-2025-06-17.md e continue de onde paramos."</pre></div>
+<div class="codewrap">
+        <h3>Onde colocar a informação (contexto vs RAG vs ferramenta):</h3>
+        <table><thead><tr><th>Estratégia</th><th>Quando usar</th><th>Custo de contexto</th></tr></thead>
+        <tbody><tr><td>Colar no prompt</td><td>Pouca info, usada agora</td><td>Alto (sempre reenviado)</td></tr><tr><td>CLAUDE.md / SKILL</td><td>Padrões do projeto</td><td>Médio (sob demanda)</td></tr><tr><td>RAG / busca</td><td>Muitos docs, busca pontual</td><td>Baixo (só o trecho achado)</td></tr><tr><td>Ferramenta/MCP</td><td>Dado vivo (banco, API)</td><td>Baixo (busca quando precisa)</td></tr></tbody></table></div>
+<div class="codewrap prdbox">
+        <h3>📄 O que é um PRD e por que é poderoso com agentes?</h3>
+        <p>PRD = Product Requirements Document. Com agentes CLI, um PRD bem escrito<br>substitui horas de explicação. O agente lê o PRD e entrega o projeto. É o briefing<br>que transforma "faz um sisteminha aí" em software de verdade.</p>
+        <pre class="code"># PRD: Sistema de Controle de Frequência — IFRN TADS
+
+## Objetivo
+Aplicação web para professores registrarem frequência de alunos
+em tempo real via QR Code gerado na aula.
+
+## Usuários
+- Professor: gera QR, vê relatório de presença
+- Aluno: escaneia QR com o celular para registrar presença
+
+## Funcionalidades
+### MVP (entregar primeiro)
+- [ ] Auth com matrícula IFRN (OAuth ou login simples)
+- [ ] Gerar QR Code único por aula (expira em 15 min)
+- [ ] Aluno escaneia e registra presença
+- [ ] Dashboard do professor com lista de presentes
+
+### Fase 2
+- [ ] Exportar para Excel
+- [ ] Integração com SUAP
+
+## Stack decidida
+- Backend: FastAPI + PostgreSQL
+- Frontend: React + Tailwind
+- Deploy: Docker no servidor do IFRN
+
+## Critérios de aceite
+- QR deve ser único e expirar em 15 minutos
+- Não deve ser possível registrar presença duas vezes
+- Dashboard atualiza em tempo real (WebSocket ou polling 10s)
+
+## O que NÃO está no escopo
+- App mobile nativo
+- Biometria
+- Integração com câmera</pre></div>
+<div class="card">
+        <h3>Estrutura de um PRD eficiente para agentes:</h3>
+        <ul><li>Objetivo claro em 1-2 frases (o agente precisa saber o 'porquê')</li><li>Usuários e seus papéis (define regras de negócio)</li><li>Funcionalidades separadas por MVP e fases futuras</li><li>Stack decidida (evita o agente escolher por conta própria)</li><li>Critérios de aceite mensuráveis (o agente sabe quando terminar)</li><li>Fora do escopo explícito (evita que o agente invente features)</li><li>Restrições técnicas (versões, limites, padrões obrigatórios)</li></ul></div>
+<div class="card">
+        <h3>Padrões de prompt que funcionam (leve pra vida):</h3>
+        <ul><li>Dê um PAPEL: 'Você é um arquiteto sênior de FastAPI...'</li><li>Peça um PLANO antes do código: 'Antes de codar, liste os passos e espere meu OK'</li><li>Defina o FORMATO de saída: 'Responda só com o diff' / 'em JSON'</li><li>Dê EXEMPLOS (few-shot): mostre 1 caso de entrada→saída esperada</li><li>Estabeleça CRITÉRIO DE PRONTO: 'só termine quando pytest passar 100%'</li><li>Use NEGATIVOS: 'NÃO instale libs novas sem perguntar'</li></ul></div>
+<div class="exerc">
+        <div class="exerc-head"><span class="nivel">Intermediário</span> <span class="exerc-tit">✎ Exercício 4 — Escreva um PRD e deixe o agente construir</span></div>
+        <div class="exerc-enun">Escolha um mini-projeto (encurtador de URL, lista de tarefas, bot de avisos da turma).<br>Escreva um PRD seguindo a estrutura acima. Entregue SÓ o PRD ao agente e peça:<br>"Leia o PRD, faça um plano, espere meu OK, depois implemente o MVP com testes."<br>Compare a qualidade com um pedido vago do tipo "faz um app de tarefas".</div>
+        <div class="dicas"><div class="dica">💡 Force o 'espere meu OK' — você revisa o plano antes de gastar tokens</div><div class="dica">💡 Inclua a seção 'Fora do escopo' — é o que mais evita retrabalho</div><div class="dica">💡 Critérios de aceite mensuráveis = o agente sabe quando parar</div></div></div>
+<div class="exerc">
+        <div class="exerc-head"><span class="nivel">Básico</span> <span class="exerc-tit">✎ Exercício 5 — Pratique a compactação</span></div>
+        <div class="exerc-enun">Numa conversa longa com um agente, peça um resumo-checkpoint em arquivo,<br>abra uma sessão nova, mande ele ler o arquivo e continuar. Meça (aproximadamente)<br>quanto contexto você economizou comparando o tamanho do resumo com o histórico original.</div>
+        <div class="dicas"><div class="dica">💡 Peça o resumo em tópicos: feito / decisões / pendências</div><div class="dica">💡 Bom resumo cabe em &lt; 1 página e ainda permite continuar sem perdas</div></div></div>
+    </section>
+<section class="secao" style="--cor:#00FF94">
+      <div class="secao-head">
+        <h2>⑤ Prática: Frameworks Multi-Agentes em Python</h2>
+        <span class="subtitulo">1:10 – 1:30 min</span>
+      </div>
+      <div class="card">
+        <h3>Por que multi-agentes?</h3>
+        <p>Um único agente tem limitações de contexto e de especialização. Com múltiplos agentes,<br>você tem um orquestrador que delega para especialistas: um agente pesquisa, outro escreve<br>código, outro revisa, outro testa. Como uma equipe real de desenvolvimento — cada um com<br>seu próprio contexto focado, o que reduz erros e custo.</p></div>
+<div class="aviso aviso-warn">
+        <div class="aviso-tit">Mas primeiro: você PRECISA de multi-agentes?</div>
+        <div>Regra honesta: 80% das tarefas um agente único resolve. Multi-agentes adiciona<br>complexidade, custo (mais chamadas de LLM) e pontos de falha. Use quando a tarefa tem<br>etapas CLARAMENTE separáveis e especializadas. Não use multi-agente por status.</div></div>
+<div class="codewrap">
+        <h3>Principais frameworks:</h3>
+        <table><thead><tr><th>Framework</th><th>Paradigma</th><th>Melhor para</th></tr></thead>
+        <tbody><tr><td>CrewAI</td><td>Papéis (Crew + Agents + Tasks)</td><td>Workflows colaborativos simples</td></tr><tr><td>LangGraph</td><td>Grafo de estados</td><td>Fluxos complexos com condicionais/loops</td></tr><tr><td>AutoGen (Microsoft)</td><td>Conversas entre agentes</td><td>Código colaborativo, debugging</td></tr><tr><td>Pydantic AI</td><td>Type-safe, Pythônico</td><td>Produção, integração com APIs</td></tr><tr><td>OpenAI Agents SDK</td><td>Handoffs entre agentes</td><td>Pipelines com handoff e guard-rails</td></tr></tbody></table></div>
+<div class="codewrap">
+        <h3>Padrões de orquestração:</h3>
+        <table><thead><tr><th>Padrão</th><th>Como funciona</th><th>Exemplo</th></tr></thead>
+        <tbody><tr><td>Sequencial</td><td>A → B → C em fila</td><td>Pesquisar → escrever → revisar</td></tr><tr><td>Hierárquico</td><td>Um gerente delega aos demais</td><td>Gerente distribui sub-tarefas</td></tr><tr><td>Paralelo</td><td>Vários ao mesmo tempo, junta no fim</td><td>3 agentes analisam 3 módulos</td></tr><tr><td>Loop/condicional</td><td>Repete até critério (ex: testes ok)</td><td>Gerar→testar→corrigir</td></tr></tbody></table></div>
+<div class="codewrap">
+        <h3>CrewAI — equipe de desenvolvimento:</h3>
+        <pre class="code"># pip install crewai crewai-tools
+
+from crewai import Agent, Task, Crew, Process
+from crewai_tools import SerperDevTool, FileReadTool
+
+# Ferramentas disponíveis
+search_tool = SerperDevTool()
+file_tool = FileReadTool()
+
+# 1. Definir os agentes (papéis)
+arquiteto = Agent(
+    role="Arquiteto de Software",
+    goal="Projetar a estrutura do sistema baseada nos requisitos",
+    backstory="""Você é um arquiteto sênior especialista em FastAPI
+    e sistemas distribuídos. Sempre considera escalabilidade.""",
+    tools=[file_tool],
+    verbose=True
+)
+
+desenvolvedor = Agent(
+    role="Desenvolvedor Python",
+    goal="Implementar o código limpo e com testes",
+    backstory="""Você escreve código Python idiomático, sempre com
+    type hints, docstrings e cobertura de testes acima de 80%.""",
+    verbose=True
+)
+
+revisor = Agent(
+    role="Code Reviewer",
+    goal="Revisar código em busca de bugs, segurança e boas práticas",
+    backstory="Você tem olho clínico para vulnerabilidades e code smells.",
+    verbose=True
+)
+
+# 2. Definir as tarefas
+tarefa_arquitetura = Task(
+    description="""Leia o PRD em docs/prd.md e projete a arquitetura
+    do sistema. Entregue: estrutura de pastas, lista de endpoints,
+    modelos de dados e decisões técnicas.""",
+    expected_output="Documento de arquitetura em Markdown",
+    agent=arquiteto
+)
+
+tarefa_codigo = Task(
+    description="""Com base na arquitetura definida, implemente o MVP.
+    Crie os arquivos em src/ seguindo o padrão FastAPI.""",
+    expected_output="Código funcional com testes passando",
+    agent=desenvolvedor,
+    context=[tarefa_arquitetura]  # depende da tarefa anterior
+)
+
+tarefa_revisao = Task(
+    description="Revise o código produzido e aponte problemas críticos.",
+    expected_output="Relatório de revisão com issues e sugestões",
+    agent=revisor,
+    context=[tarefa_codigo]
+)
+
+# 3. Criar e executar a crew
+crew = Crew(
+    agents=[arquiteto, desenvolvedor, revisor],
+    tasks=[tarefa_arquitetura, tarefa_codigo, tarefa_revisao],
+    process=Process.sequential,  # ou Process.hierarchical
+    verbose=True
+)
+
+resultado = crew.kickoff()
+print(resultado)</pre></div>
+<div class="codewrap">
+        <h3>LangGraph — fluxo com condicionais (loop de auto-correção):</h3>
+        <pre class="code"># pip install langgraph langchain-anthropic
+
+from langgraph.graph import StateGraph, END
+from langchain_anthropic import ChatAnthropic
+from typing import TypedDict
+
+# Estado compartilhado entre os nós
+class EstadoProjeto(TypedDict):
+    tarefa: str
+    codigo: str
+    testes_passando: bool
+    tentativas: int
+
+llm = ChatAnthropic(model="claude-sonnet-4-6")
+
+# Nós do grafo (cada um é um "agente")
+def gerar_codigo(state):
+    resposta = llm.invoke(f"Escreva uma função Python que {state['tarefa']}")
+    return {"codigo": resposta.content, "tentativas": state["tentativas"] + 1}
+
+def rodar_testes(state):
+    # Aqui você rodaria pytest de verdade
+    passou = "def test_" in state["codigo"] or "assert" in state["codigo"]
+    return {"testes_passando": passou}
+
+def corrigir_codigo(state):
+    resposta = llm.invoke(
+        "Este código falhou nos testes. Corrija:\n" + state["codigo"]
+    )
+    return {"codigo": resposta.content}
+
+# Roteador — decide o próximo passo
+def decidir_proximo(state):
+    if state["testes_passando"]:
+        return "finalizar"
+    elif state["tentativas"] &gt;= 3:
+        return "finalizar"          # desiste após 3 tentativas
+    return "corrigir"
+
+# Construir o grafo
+grafo = StateGraph(EstadoProjeto)
+grafo.add_node("gerar", gerar_codigo)
+grafo.add_node("testar", rodar_testes)
+grafo.add_node("corrigir", corrigir_codigo)
+
+grafo.set_entry_point("gerar")
+grafo.add_edge("gerar", "testar")
+grafo.add_conditional_edges(
+    "testar", decidir_proximo,
+    {"finalizar": END, "corrigir": "corrigir"}
+)
+grafo.add_edge("corrigir", "testar")
+
+app = grafo.compile()
+resultado = app.invoke({
+    "tarefa": "calcule o fatorial de um número",
+    "codigo": "", "testes_passando": False, "tentativas": 0
+})
+print(resultado["codigo"])</pre></div>
+<div class="codewrap">
+        <h3>AutoGen — dois agentes conversando (dev + crítico):</h3>
+        <pre class="code"># pip install pyautogen
+
+from autogen import AssistantAgent, UserProxyAgent
+
+config = {"model": "gpt-4o", "api_key": "sk-..."}
+
+# Agente que escreve código
+dev = AssistantAgent(
+    name="dev",
+    llm_config={"config_list": [config]},
+    system_message="Você escreve Python limpo e com testes."
+)
+
+# Agente que executa o código e devolve o resultado/erro
+executor = UserProxyAgent(
+    name="executor",
+    human_input_mode="NEVER",       # 100% automático
+    code_execution_config={"work_dir": "saida", "use_docker": False},
+    max_consecutive_auto_reply=5
+)
+
+# Eles conversam até a tarefa terminar
+executor.initiate_chat(
+    dev,
+    message="Implemente bubble sort, rode um teste e mostre a saída."
+)</pre></div>
+<div class="card">
+        <h3>Indo para produção — o que ninguém te conta:</h3>
+        <ul><li>Custo: cada agente extra = mais chamadas de LLM. Meça tokens por execução</li><li>Loops infinitos: SEMPRE coloque max_tentativas / max_turns</li><li>Observabilidade: use LangSmith / logs para ver o que cada agente fez</li><li>Determinismo: temperatura baixa + prompts claros = menos surpresas</li><li>Avaliação: crie um conjunto de testes (evals) para medir se está melhorando</li><li>Falhas: trate timeouts e respostas inválidas — agentes erram, planeje pra isso</li><li>Segurança: sandbox para execução de código, nunca rode código não confiável solto</li></ul></div>
+<div class="exerc">
+        <div class="exerc-head"><span class="nivel">Avançado · Capstone</span> <span class="exerc-tit">✎ Exercício 6 — Monte sua mini-equipe de agentes</span></div>
+        <div class="exerc-enun">Usando CrewAI OU LangGraph, monte uma crew de 3 papéis (pesquisador, dev, revisor)<br>que receba o PRD que você escreveu no Exercício 4 e produza: um doc de arquitetura,<br>o código do MVP e um relatório de revisão. Adicione um limite de tentativas e logue o<br>custo aproximado em tokens.</div>
+        <div class="dicas"><div class="dica">💡 Comece com Process.sequential — mais fácil de depurar</div><div class="dica">💡 Reaproveite o PRD do Ex.4 como entrada (context da primeira task)</div><div class="dica">💡 Adicione um critério de pronto: revisor aprova ou manda corrigir (loop)</div><div class="dica">💡 Veja exemplos-praticos-agentes.py e exercicios.py para o esqueleto pronto</div></div></div>
+<div class="card">
+        <h3>Dicas finais para levar pra vida:</h3>
+        <ul><li>Comece simples — um agente único já resolve 80% dos casos</li><li>CLAUDE.md / GEMINI.md são seus melhores amigos: documente tudo</li><li>Escreva PRDs antes de código — o agente entrega muito mais com um bom briefing</li><li>Compacte o contexto regularmente em sessões longas</li><li>Use multi-agentes quando a tarefa tiver etapas claramente separáveis</li><li>Revise sempre o que o agente produziu — você é o engenheiro, ele é o estagiário</li></ul></div>
+<div class="card">
+        <h3>Documentação para se aprofundar:</h3>
+        <ul class="links"><li><span class="term">Claude Code Docs</span> — Guia oficial do agente da Anthropic<br><span class="url">https://docs.anthropic.com/en/docs/claude-code</span></li><li><span class="term">Gemini CLI</span> — CLI gratuito do Google (open source)<br><span class="url">https://github.com/google-gemini/gemini-cli</span></li><li><span class="term">Model Context Protocol</span> — Especificação e servers MCP<br><span class="url">https://modelcontextprotocol.io</span></li><li><span class="term">CrewAI Docs</span> — Multi-agentes por papéis<br><span class="url">https://docs.crewai.com</span></li><li><span class="term">LangGraph Docs</span> — Grafos de estado para agentes<br><span class="url">https://langchain-ai.github.io/langgraph/</span></li><li><span class="term">AutoGen</span> — Conversas multi-agente (Microsoft)<br><span class="url">https://microsoft.github.io/autogen/</span></li><li><span class="term">Anthropic — Building Agents</span> — Padrões de design de agentes<br><span class="url">https://www.anthropic.com/research/building-effective-agents</span></li><li><span class="term">Prompt Engineering Guide</span> — Técnicas de prompt (ReAct, few-shot...)<br><span class="url">https://www.promptingguide.ai</span></li></ul></div>
+    </section>
+<section class="secao" style="--cor:#ec4899">
+      <div class="secao-head">
+        <h2>⑥ Bônus: Deploy, CI/CD &amp; Agentes em Produção</h2>
+        <span class="subtitulo">Material extra</span>
+      </div>
+      <div class="card">
+        <h3>Do terminal para a nuvem: onde agentes rodam</h3>
+        <p>Até agora você rodou o agente na sua máquina, interativamente. Em produção ele roda<br>SOZINHO, sem humano no teclado: disparado por um evento (um push, uma issue, um cron).<br>Os lugares mais comuns: CI/CD (GitHub Actions), um container/serverless acionado por<br>webhook, ou um worker agendado. O segredo é o modo HEADLESS — o agente recebe a tarefa<br>por argumento, executa e devolve o resultado, sem prompts interativos.</p></div>
+<div class="codewrap">
+        <h3>Onde hospedar um agente:</h3>
+        <table><thead><tr><th>Ambiente</th><th>Disparado por</th><th>Bom para</th></tr></thead>
+        <tbody><tr><td>GitHub Actions</td><td>push / PR / issue</td><td>Revisão de PR, fix de bugs, docs</td></tr><tr><td>Cron / scheduler</td><td>horário</td><td>Relatórios diários, triagem de issues</td></tr><tr><td>Serverless (Lambda)</td><td>webhook / fila</td><td>Responder eventos sob demanda</td></tr><tr><td>Container 24/7</td><td>fila / API</td><td>Bots interativos, alto volume</td></tr></tbody></table></div>
+<div class="codewrap">
+        <h3>Modo headless — agente sem interação (script/CI):</h3>
+        <pre class="code"># Claude Code em modo não-interativo: passa a tarefa e sai.
+$ claude -p "Leia o erro em logs/erro.txt, corrija o código e rode os testes" \
+         --output-format json
+
+# Gemini CLI headless:
+$ gemini -p "Gere o CHANGELOG a partir dos commits desde a última tag"
+
+# Útil em qualquer pipeline: a saída (JSON/texto) vira input do próximo passo.</pre></div>
+<div class="codewrap">
+        <h3>GitHub Actions — agente revisa toda PR automaticamente:</h3>
+        <pre class="code"># .github/workflows/revisao-agente.yml
+name: Revisao por Agente
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  revisar:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write     # para comentar na PR
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      - name: Rodar agente de revisao
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          npm install -g @anthropic-ai/claude-code
+          claude -p "Revise o diff desta PR (git diff origin/main).
+            Aponte bugs, riscos de seguranca e melhorias.
+            Seja conciso: 1 linha por problema." \
+            --output-format text &gt; revisao.txt
+          gh pr comment ${{ github.event.number }} --body-file revisao.txt
+        # GH_TOKEN herdado automaticamente para o gh CLI</pre></div>
+<div class="aviso aviso-warn">
+        <div class="aviso-tit">Segurança em CI — leia antes de dar a chave</div>
+        <div>Em CI o agente roda com acesso ao seu repo e a uma API key. Regras:<br>NUNCA exponha segredos em logs; use secrets do GitHub (nunca hardcode).<br>Dê permissões MÍNIMAS (read quando possível). Cuidado com 'pull_request_target'<br>em repos públicos — PRs de terceiros podem injetar comandos. Rode em sandbox e<br>limite o que o agente pode tocar.</div></div>
+<div class="card">
+        <h3>Guarda-corpos para agentes autônomos em produção:</h3>
+        <ul><li>Orçamento de tokens/custo por execução — aborte se passar do limite</li><li>Timeout e max de iterações — nada de loop infinito comendo créditos</li><li>Lista branca de ferramentas — em CI, desligue o que não for necessário</li><li>Tudo em git/branch — o agente nunca empurra direto na main</li><li>Human-in-the-loop nos pontos críticos — aprovação antes de deploy/merge</li><li>Logs e observabilidade — registre cada ação para auditar depois</li><li>Idempotência — rodar de novo não deve duplicar efeitos</li></ul></div>
+<div class="codewrap">
+        <h3>Observabilidade — o que medir:</h3>
+        <table><thead><tr><th>Métrica</th><th>Por quê</th><th>Ferramenta</th></tr></thead>
+        <tbody><tr><td>Tokens / custo</td><td>Não estourar orçamento</td><td>Logs próprios, LangSmith</td></tr><tr><td>Latência</td><td>UX e custo de runner</td><td>Métricas do CI</td></tr><tr><td>Taxa de sucesso</td><td>Saber se confia no agente</td><td>Evals automatizados</td></tr><tr><td>Ações executadas</td><td>Auditoria e segurança</td><td>Trace / logs estruturados</td></tr></tbody></table></div>
+<div class="codewrap">
+        <h3>Guard-rail simples de custo (wrapper em Python):</h3>
+        <pre class="code">import anthropic
+
+LIMITE_TOKENS = 50_000          # teto por execução
+gasto = 0
+
+def chamar_com_teto(client, **kwargs):
+    global gasto
+    if gasto &gt; LIMITE_TOKENS:
+        raise RuntimeError(f"Orcamento estourado: {gasto} tokens")
+    resp = client.messages.create(**kwargs)
+    gasto += resp.usage.input_tokens + resp.usage.output_tokens
+    print(f"[custo] +{resp.usage.output_tokens} | total={gasto}")
+    return resp
+
+# Em CI: se estourar, o job falha cedo em vez de consumir todos os creditos.</pre></div>
+<div class="quiz">
+        <div class="quiz-tit">🧠 Quiz relâmpago</div>
+        <div class="quiz-perg">Qual é a maior diferença ao rodar um agente em CI vs no seu terminal?</div>
+        <ul class="quiz-ops"><li class="">○ Em CI o modelo é mais inteligente</li><li class="certa">✓ Em CI ele roda headless (sem humano), então guarda-corpos e segredos são críticos</li><li class="">○ Em CI não precisa de API key</li><li class="">○ Em CI o agente não pode editar arquivos</li></ul>
+        <div class="quiz-exp">💡 Sem humano no loop, qualquer erro vira automático. Por isso: permissões mínimas, limite de custo, sandbox e segredos via secrets — nunca hardcoded.</div></div>
+<div class="exerc">
+        <div class="exerc-head"><span class="nivel">Avançado</span> <span class="exerc-tit">✎ Exercício 7 — Agente revisor na sua PR</span></div>
+        <div class="exerc-enun">Crie um workflow do GitHub Actions que, a cada PR aberta, roda um agente em modo<br>headless para revisar o diff e comentar na PR. Adicione um limite de custo e<br>permissões mínimas. Abra uma PR de teste e veja o comentário automático aparecer.</div>
+        <div class="dicas"><div class="dica">💡 Guarde a API key em Settings → Secrets → Actions (nunca no YAML)</div><div class="dica">💡 Use 'permissions: pull-requests: write' só onde precisa comentar</div><div class="dica">💡 Comece logando o diff num arquivo antes de mandar pro agente — depure barato</div><div class="dica">💡 Teste o comando 'claude -p ...' localmente antes de jogar no CI</div></div></div>
+<div class="card">
+        <h3>Próximos passos — sua jornada depois do curso:</h3>
+        <ul><li>Automatize 1 tarefa chata sua esta semana (changelog, triagem de issues...)</li><li>Versione um CLAUDE.md no seu projeto real e evolua a cada sessão</li><li>Monte um workflow de revisão de PR com agente (Exercício 7)</li><li>Experimente um MCP server útil para o seu contexto (banco, Jira, Notion)</li><li>Quando dominar 1 agente, evolua para multi-agentes só onde fizer sentido</li><li>Compartilhe seus PRDs e skills com o time — conhecimento que escala</li></ul></div>
+<div class="card">
+        <h3>Aprofundar em produção:</h3>
+        <ul class="links"><li><span class="term">Claude Code em CI/CD</span> — Rodar o agente no GitHub Actions<br><span class="url">https://docs.anthropic.com/en/docs/claude-code/github-actions</span></li><li><span class="term">Claude Code Headless</span> — SDK e modo não-interativo<br><span class="url">https://docs.anthropic.com/en/docs/claude-code/sdk</span></li><li><span class="term">GitHub Actions Security</span> — Segredos e permissões em workflows<br><span class="url">https://docs.github.com/en/actions/security-guides</span></li><li><span class="term">LangSmith</span> — Observabilidade e evals de agentes<br><span class="url">https://docs.smith.langchain.com</span></li></ul></div>
+    </section>
+</div></body></html>
